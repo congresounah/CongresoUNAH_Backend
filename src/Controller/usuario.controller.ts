@@ -377,7 +377,7 @@ export const verificarusuario = async (req: Request, res: Response) => {
 export const verificar_codigo_organizador = (req: Request, res: Response) => {
   const { codigo_verificacion } = req.body;
 
-  if (codigo_verificacion === "1234") {
+  if (codigo_verificacion === "Z7X3Q9") {
     res.status(200).json({ resultado: true });
   } else {
     res.status(200).json({ resultado: false });
