@@ -334,7 +334,7 @@ export const cambiarcontrasena = async (req: Request, res: Response): Promise<an
     );
     res.status(201).json(resultado);
   } catch (error) {
-    console.error('Error al cambiar contraseña:', error);
+    console.error('Se produjo un error al cambiar contraseña:', error);
     const err = error as Error;
     res.status(500).json({
       message: 'Hubo un problema al cambiar contraseña',
@@ -383,7 +383,6 @@ export const verificar_codigo_organizador = (req: Request, res: Response) => {
     res.status(200).json({ resultado: false });
   }
 };
-
 
 export const verificar_preregistro = async (req: Request, res: Response) => {
   try {
