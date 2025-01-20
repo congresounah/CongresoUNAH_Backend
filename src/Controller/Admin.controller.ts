@@ -27,12 +27,13 @@ export const ValidarUsuario = async (req: Request, res: Response) =>{
     const {nuevo_estado} = req.body
     10
     try{
-        const uniqueUrl = `https://congreso-universitario.vercel.app/colaborador/informacion/${id_usuario}`;
+        const uniqueUrl = `https://congresoinnovacionunah2025.com/colaborador/informacion/${id_usuario}`;
 
         const qrCode = await QRCode.toDataURL(uniqueUrl);
 
         const resultado = await Admin.ValidarUsuarios(Number(id_usuario),nuevo_estado,qrCode)
-
+        console.log("La el qr del usuario es: ", uniqueUrl)
+        console.log(qrCode)
         res.status(200).json({
             message: 'Estado actualizado con exito ',
             resultado,

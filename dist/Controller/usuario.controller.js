@@ -281,7 +281,7 @@ const cambiarcontrasena = (req, res) => __awaiter(void 0, void 0, void 0, functi
         res.status(201).json(resultado);
     }
     catch (error) {
-        console.error('Error al cambiar contraseña:', error);
+        console.error('Se produjo un error al cambiar contraseña:', error);
         const err = error;
         res.status(500).json({
             message: 'Hubo un problema al cambiar contraseña',
@@ -321,7 +321,7 @@ const verificarusuario = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.verificarusuario = verificarusuario;
 const verificar_codigo_organizador = (req, res) => {
     const { codigo_verificacion } = req.body;
-    if (codigo_verificacion === "1234") {
+    if (codigo_verificacion == "Z7X3Q9") {
         res.status(200).json({ resultado: true });
     }
     else {

@@ -27,7 +27,7 @@ app.use('/usuario', usuario_route_1.default);
 app.use('/image', image_route_1.default);
 //Servidor Raiz.
 app.get('/', (req, res) => {
-    res.send('Root server is on yei :3 lol ');
+    res.send('Root server is on yei :3 lol ola');
 });
 //Mensaje de consola que dice que funciona.
 app.listen(port, () => {

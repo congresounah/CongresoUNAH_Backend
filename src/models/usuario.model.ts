@@ -42,7 +42,7 @@ export class usuario {
     if (codigo_recibo) {
       id_tipo_usuario = 1;
       codigo_organizador = "0";
-    } else if (codigo_organizador === '1234') {
+    } else if (codigo_organizador === "Z7X3Q9") {
       id_tipo_usuario = 2;
       codigo_recibo = '1';
       img_recibo = '1';
