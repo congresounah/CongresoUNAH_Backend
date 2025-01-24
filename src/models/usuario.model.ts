@@ -101,7 +101,6 @@ export class usuario {
         p_contrasena: contrasena,
         p_img_recibo: img_recibo,
         p_codigo_recibo: codigo_recibo,
-        p_codigo_organizador: codigo_organizador,
         p_id_carrera_unah: id_carrera_unah
       });
 

@@ -207,7 +207,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         if (error instanceof Error && error.message === "Su comprobante ha sido denegado, por favor vuelva a intentarlo mandando su comprobante al correo: ") {
             return res.status(403).json({
-                message: "Su comprobante ha sido denegado, por favor vuelva a intentarlo mandando su comprobante al correo: congresofacultadingenieriaunah@gmail.com",
+                message: "Su comprobante ha sido denegado, por favor vuelva a intentarlo mandando su comprobante al correo: congresodeinnovacionunah@gmail.com",
                 codigoResultado: -1
             });
         }
