@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.downloadCertificate = exports.sendOneCertificate = exports.sendCertificates = exports.GetUsuariosAptosCertificados = exports.enviar_correo_organizador = exports.GetUserByID = exports.ActualizarUsuario = exports.BuscarUsuario = exports.ValidarUsuario = exports.GetUsuariosValidaciones = void 0;
+exports.ExcelAlumnos = exports.downloadCertificate = exports.sendOneCertificate = exports.sendCertificates = exports.GetUsuariosAptosCertificados = exports.enviar_correo_organizador = exports.GetUserByID = exports.ActualizarUsuario = exports.BuscarUsuario = exports.ValidarUsuario = exports.GetUsuariosValidaciones = void 0;
 const Admin_model_1 = require("../models/Admin.model");
 const emailservice_1 = require("../services/emailservice");
 const pdfGenerator_1 = require("../services/pdfGenerator");
 const email_validator_1 = __importDefault(require("email-validator"));
 const qrcode_1 = __importDefault(require("qrcode"));
+const exceljs_1 = __importDefault(require("exceljs"));
 const GetUsuariosValidaciones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { estado } = req.body;
     try {
@@ -210,3 +211,39 @@ const downloadCertificate = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.downloadCertificate = downloadCertificate;
+const ExcelAlumnos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const resultado = yield Admin_model_1.Admin.Usuarios_admitidos();
+        if (!resultado || resultado.length === 0) {
+            return res.status(404).json({ message: "No se encontraron usuarios admitidos" });
+        }
+        // Crear un nuevo libro de Excel
+        const workbook = new exceljs_1.default.Workbook();
+        const worksheet = workbook.addWorksheet("Usuarios Admitidos");
+        // Definir encabezados
+        worksheet.columns = [
+            { header: "ID Usuario", key: "id_usuario", width: 15 },
+            { header: "DNI", key: "dni", width: 15 },
+            { header: "Nombre Completo", key: "nombre_completo", width: 30 },
+            { header: "Correo", key: "correo", width: 25 },
+            { header: "Universidad", key: "universidad", width: 25 },
+            { header: "Identificador UNAH", key: "identificador_unah", width: 20 },
+            { header: "Carrera", key: "carrera", width: 30 }
+        ];
+        // Agregar filas con los datos
+        resultado.forEach((usuario) => {
+            worksheet.addRow(usuario);
+        });
+        // Configurar la respuesta para la descarga
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", 'attachment; filename="usuarios_admitidos.xlsx"');
+        // Enviar el archivo
+        yield workbook.xlsx.write(res);
+        res.end();
+    }
+    catch (error) {
+        console.error("Error al generar el Excel:", error);
+        res.status(500).json({ error: "Hubo un problema al generar el archivo Excel" });
+    }
+});
+exports.ExcelAlumnos = ExcelAlumnos;

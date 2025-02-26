@@ -112,4 +112,12 @@ export class Admin{
         }
         return data
     }
+    static async Usuarios_admitidos(){
+        const {data, error} = await supabase.rpc('p_usuarios_admitidos')
+        if (error){
+            console.error("Error al taer los usuarios admitidos", error);
+            throw new Error('Error al obtener usuarios admitidos');
+        }
+        return data
+    }
 }

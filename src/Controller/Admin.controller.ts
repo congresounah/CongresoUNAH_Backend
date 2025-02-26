@@ -4,6 +4,7 @@ import { sendVerificationEmail,sendAllCertificates } from '../services/emailserv
 import { generateCertificatePDF } from '../services/pdfGenerator';
 import validator from 'email-validator';
 import QRCode from 'qrcode';
+import ExcelJS from "exceljs";
 
 
 export const GetUsuariosValidaciones = async (req: Request, res: Response) =>{
@@ -228,5 +229,47 @@ export const downloadCertificate = async (req: Request, res: Response): Promise<
     } catch (error) {
         console.error('Error generando el certificado:', error);
         res.status(500).json({ message: 'Hubo un error al generar el certificado' });
+    }
+};
+
+
+export const ExcelAlumnos = async (req: Request, res: Response) => {
+    try {
+        const resultado = await Admin.Usuarios_admitidos();
+
+        if (!resultado || resultado.length === 0) {
+            return res.status(404).json({ message: "No se encontraron usuarios admitidos" });
+        }
+
+        // Crear un nuevo libro de Excel
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Usuarios Admitidos");
+
+        // Definir encabezados
+        worksheet.columns = [
+            { header: "ID Usuario", key: "id_usuario", width: 15 },
+            { header: "DNI", key: "dni", width: 15 },
+            { header: "Nombre Completo", key: "nombre_completo", width: 30 },
+            { header: "Correo", key: "correo", width: 25 },
+            { header: "Universidad", key: "universidad", width: 25 },
+            { header: "Identificador UNAH", key: "identificador_unah", width: 20 },
+            { header: "Carrera", key: "carrera", width: 30 }
+        ];
+
+        // Agregar filas con los datos
+        resultado.forEach((usuario) => {
+            worksheet.addRow(usuario);
+        });
+
+        // Configurar la respuesta para la descarga
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", 'attachment; filename="usuarios_admitidos.xlsx"');
+
+        // Enviar el archivo
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error("Error al generar el Excel:", error);
+        res.status(500).json({ error: "Hubo un problema al generar el archivo Excel" });
     }
 };
