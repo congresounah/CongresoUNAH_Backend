@@ -9,7 +9,8 @@ import {GetUsuariosValidaciones,
     sendOneCertificate,
     downloadCertificate,
     GetUsuariosAptosCertificados,
-    ExcelAlumnos} from '../Controller/Admin.controller';
+    ExcelAlumnos,
+    CarnetAlumnos} from '../Controller/Admin.controller';
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.post('/certificates/send/:id_user', sendOneCertificate);
 router.get('/certificates/download/:id_user', downloadCertificate);
 router.get('/certificates/accepted/users', GetUsuariosAptosCertificados);
 router.get('/accepted/users', ExcelAlumnos);
+router.get('/accepted/users/license', CarnetAlumnos);
 
 
 export default router;

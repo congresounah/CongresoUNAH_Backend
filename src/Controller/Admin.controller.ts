@@ -5,6 +5,10 @@ import { generateCertificatePDF } from '../services/pdfGenerator';
 import validator from 'email-validator';
 import QRCode from 'qrcode';
 import ExcelJS from "exceljs";
+import axios from "axios";
+import PDFDocument from "pdfkit";
+
+
 
 
 export const GetUsuariosValidaciones = async (req: Request, res: Response) =>{
@@ -237,10 +241,6 @@ export const ExcelAlumnos = async (req: Request, res: Response) => {
     try {
         const resultado = await Admin.Usuarios_admitidos();
 
-        if (!resultado || resultado.length === 0) {
-            return res.status(404).json({ message: "No se encontraron usuarios admitidos" });
-        }
-
         // Crear un nuevo libro de Excel
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("Usuarios Admitidos");
@@ -271,5 +271,68 @@ export const ExcelAlumnos = async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Error al generar el Excel:", error);
         res.status(500).json({ error: "Hubo un problema al generar el archivo Excel" });
+    }
+};
+
+export const CarnetAlumnos = async (req: Request, res: Response) => {
+    try {
+        const resultado = await Admin.Usuarios_admitidos();
+
+
+        // Crear documento PDF
+        const doc = new PDFDocument({ size: "A4", margin: 50 });
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", 'attachment; filename="carnets_alumnos.pdf"');
+        doc.pipe(res);
+
+        let index = 0; // Contador para colocar dos carnets por página
+
+        for (const usuario of resultado) {
+            // Determinar la posición en la página (superior o inferior)
+            const startY = index % 2 === 0 ? 100 : 450; // Primera persona arriba, segunda abajo
+
+            // Intentar descargar el QR si existe
+            let qrAvailable = false;
+            if (usuario.url_qr) {
+                try {
+                    const response = await axios.get(usuario.url_qr, { responseType: "arraybuffer" });
+                    const qrImage = Buffer.from(response.data, "binary");
+
+                    // Insertar el QR en la posición correcta
+                    doc.image(qrImage, 170, startY, { width: 250, height: 250 }); // QR bien centrado
+                    qrAvailable = true;
+                } catch (error) {
+                    console.error(`No se pudo cargar el QR de ${usuario.nombre_completo}:`, error);
+                }
+            }
+
+            // Si el QR no está disponible, mostrar mensaje en su lugar
+            if (!qrAvailable) {
+                doc.fontSize(12).text("QR no disponible", 50, startY + 100, { align: "center", width: 500 });
+            }
+
+            // Agregar el nombre del usuario debajo del QR
+            doc.fontSize(18).text(usuario.nombre_completo, 50, startY + 260, { align: "center", width: 500 });
+
+            if (usuario.identificador_unah == null) {
+                doc.fontSize(16).text("Externo", 50, startY + 300, { align: "center", width: 500 });
+            } else {
+                doc.fontSize(18).text(usuario.identificador_unah, 50, startY + 300, { align: "center", width: 500 });
+            }
+            
+
+            index++;
+
+            // Cada dos personas, crear una nueva página
+            if (index % 2 === 0) {
+                doc.addPage();
+            }
+        }
+
+        doc.end(); // Finalizar el PDF
+
+    } catch (error) {
+        console.error("Error al generar el PDF de carnets", error);
+        res.status(500).json({ error: "Hubo un problema al generar el archivo PDF" });
     }
 };

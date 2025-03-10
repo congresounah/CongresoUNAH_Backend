@@ -12,13 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExcelAlumnos = exports.downloadCertificate = exports.sendOneCertificate = exports.sendCertificates = exports.GetUsuariosAptosCertificados = exports.enviar_correo_organizador = exports.GetUserByID = exports.ActualizarUsuario = exports.BuscarUsuario = exports.ValidarUsuario = exports.GetUsuariosValidaciones = void 0;
+exports.CarnetAlumnos = exports.ExcelAlumnos = exports.downloadCertificate = exports.sendOneCertificate = exports.sendCertificates = exports.GetUsuariosAptosCertificados = exports.enviar_correo_organizador = exports.GetUserByID = exports.ActualizarUsuario = exports.BuscarUsuario = exports.ValidarUsuario = exports.GetUsuariosValidaciones = void 0;
 const Admin_model_1 = require("../models/Admin.model");
 const emailservice_1 = require("../services/emailservice");
 const pdfGenerator_1 = require("../services/pdfGenerator");
 const email_validator_1 = __importDefault(require("email-validator"));
 const qrcode_1 = __importDefault(require("qrcode"));
 const exceljs_1 = __importDefault(require("exceljs"));
+const axios_1 = __importDefault(require("axios"));
+const pdfkit_1 = __importDefault(require("pdfkit"));
 const GetUsuariosValidaciones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { estado } = req.body;
     try {
@@ -214,9 +216,6 @@ exports.downloadCertificate = downloadCertificate;
 const ExcelAlumnos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const resultado = yield Admin_model_1.Admin.Usuarios_admitidos();
-        if (!resultado || resultado.length === 0) {
-            return res.status(404).json({ message: "No se encontraron usuarios admitidos" });
-        }
         // Crear un nuevo libro de Excel
         const workbook = new exceljs_1.default.Workbook();
         const worksheet = workbook.addWorksheet("Usuarios Admitidos");
@@ -247,3 +246,55 @@ const ExcelAlumnos = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.ExcelAlumnos = ExcelAlumnos;
+const CarnetAlumnos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const resultado = yield Admin_model_1.Admin.Usuarios_admitidos();
+        // Crear documento PDF
+        const doc = new pdfkit_1.default({ size: "A4", margin: 50 });
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", 'attachment; filename="carnets_alumnos.pdf"');
+        doc.pipe(res);
+        let index = 0; // Contador para colocar dos carnets por página
+        for (const usuario of resultado) {
+            // Determinar la posición en la página (superior o inferior)
+            const startY = index % 2 === 0 ? 100 : 450; // Primera persona arriba, segunda abajo
+            // Intentar descargar el QR si existe
+            let qrAvailable = false;
+            if (usuario.url_qr) {
+                try {
+                    const response = yield axios_1.default.get(usuario.url_qr, { responseType: "arraybuffer" });
+                    const qrImage = Buffer.from(response.data, "binary");
+                    // Insertar el QR en la posición correcta
+                    doc.image(qrImage, 170, startY, { width: 250, height: 250 }); // QR bien centrado
+                    qrAvailable = true;
+                }
+                catch (error) {
+                    console.error(`No se pudo cargar el QR de ${usuario.nombre_completo}:`, error);
+                }
+            }
+            // Si el QR no está disponible, mostrar mensaje en su lugar
+            if (!qrAvailable) {
+                doc.fontSize(12).text("QR no disponible", 50, startY + 100, { align: "center", width: 500 });
+            }
+            // Agregar el nombre del usuario debajo del QR
+            doc.fontSize(18).text(usuario.nombre_completo, 50, startY + 260, { align: "center", width: 500 });
+            if (usuario.identificador_unah == null) {
+                doc.fontSize(16).text("Externo", 50, startY + 300, { align: "center", width: 500 });
+            }
+            else {
+                doc.fontSize(18).text(usuario.identificador_unah, 50, startY + 300, { align: "center", width: 500 });
+            }
+            index++;
+            // Cada dos personas, crear una nueva página
+            if (index % 2 === 0) {
+                doc.addPage();
+            }
+        }
+        doc.end(); // Finalizar el PDF
+    }
+    catch (error) {
+        console.error("Error al generar el PDF de carnets", error);
+        res.status(500).json({ error: "Hubo un problema al generar el archivo PDF" });
+    }
+});
+exports.CarnetAlumnos = CarnetAlumnos;
