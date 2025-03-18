@@ -239,7 +239,7 @@ export const downloadCertificate = async (req: Request, res: Response): Promise<
 
 export const ExcelAlumnos = async (req: Request, res: Response) => {
     try {
-        const resultado = await Admin.Usuarios_admitidos();
+        const resultado = await Admin.Usuarios_admitidos_listado();
 
         // Crear un nuevo libro de Excel
         const workbook = new ExcelJS.Workbook();
