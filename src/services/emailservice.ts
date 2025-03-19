@@ -124,7 +124,7 @@ export const RecordatorioEmail = async (to: string): Promise<void> => {
                         
                         <!-- Body -->
                         <div style="padding: 20px; color: #2C2F73; text-align: left;">
-                            <p style="font-size: 16px;">Te damos la bienvenida al Congreso de Innovación y Tecnología UNAH 2025. A partir de hoy a las 8:00 a. m., podrás inscribirte en las conferencias disponibles en la plataforma.</p>
+                            <p style="font-size: 16px;">Te damos la bienvenida al Congreso de Innovación y Tecnología UNAH 2025. A partir de hoy a las 12:30 p. m., podrás inscribirte en las conferencias disponibles en la plataforma.</p>
                             <p style="font-size: 16px;">Para inscribirte, solo debes acceder con las credenciales con las que te registraste y dirigirte al apartado de Conferencias.</p>
 
                             <h3 style="color: #F29D35;">Requisitos para obtener diploma y horas VOAE</h3>
