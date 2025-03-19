@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import {Admin} from '../models/Admin.model'
-import { sendVerificationEmail,sendAllCertificates } from '../services/emailservice';
+import { sendVerificationEmail,sendAllCertificates ,RecordatorioEmail} from '../services/emailservice';
 import { generateCertificatePDF } from '../services/pdfGenerator';
 import validator from 'email-validator';
 import QRCode from 'qrcode';
@@ -334,5 +334,44 @@ export const CarnetAlumnos = async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Error al generar el PDF de carnets", error);
         res.status(500).json({ error: "Hubo un problema al generar el archivo PDF" });
+    }
+};
+
+export const EnvioCorreos = async (req: Request, res: Response) => {
+    try {
+        const resultado = await Admin.Usuarios_admitidos_listado();
+
+        if (!resultado || resultado.length === 0) {
+            res.status(404).json({ message: 'No se encontraron usuarios para el estado proporcionado' });
+            return;
+        }
+
+        const emailsSent: string[] = [];
+        const emailsFailed: string[] = [];
+
+        await Promise.all(
+            resultado.map(async (user) => {
+                try {
+                    if (!user.correo) {
+                        throw new Error('Correo no definido');
+                    }
+                    
+                    await RecordatorioEmail(user.correo);
+                    emailsSent.push(user.correo);
+                } catch (error) {
+                    console.error(`Error enviando correo a ${user.correo}:`, error);
+                    emailsFailed.push(user.correo);
+                }
+            })
+        );
+
+        res.status(200).json({
+            message: 'Correos enviados con éxito',
+            emailsSent,
+            emailsFailed,
+        });
+    } catch (error) {
+        console.error('Error enviando correos:', error);
+        res.status(500).json({ message: 'Hubo un error al enviar los correos' });
     }
 };

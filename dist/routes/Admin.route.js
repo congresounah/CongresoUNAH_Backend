@@ -18,4 +18,5 @@ router.get('/certificates/download/:id_user', Admin_controller_1.downloadCertifi
 router.get('/certificates/accepted/users', Admin_controller_1.GetUsuariosAptosCertificados);
 router.get('/accepted/users', Admin_controller_1.ExcelAlumnos);
 router.get('/accepted/users/license', Admin_controller_1.CarnetAlumnos);
+router.get('/send-email', Admin_controller_1.EnvioCorreos);
 exports.default = router;

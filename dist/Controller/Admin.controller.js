@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CarnetAlumnos = exports.ExcelAlumnos = exports.downloadCertificate = exports.sendOneCertificate = exports.sendCertificates = exports.GetUsuariosAptosCertificados = exports.enviar_correo_organizador = exports.GetUserByID = exports.ActualizarUsuario = exports.BuscarUsuario = exports.ValidarUsuario = exports.GetUsuariosValidaciones = void 0;
+exports.EnvioCorreos = exports.CarnetAlumnos = exports.ExcelAlumnos = exports.downloadCertificate = exports.sendOneCertificate = exports.sendCertificates = exports.GetUsuariosAptosCertificados = exports.enviar_correo_organizador = exports.GetUserByID = exports.ActualizarUsuario = exports.BuscarUsuario = exports.ValidarUsuario = exports.GetUsuariosValidaciones = void 0;
 const Admin_model_1 = require("../models/Admin.model");
 const emailservice_1 = require("../services/emailservice");
 const pdfGenerator_1 = require("../services/pdfGenerator");
@@ -215,7 +215,7 @@ const downloadCertificate = (req, res) => __awaiter(void 0, void 0, void 0, func
 exports.downloadCertificate = downloadCertificate;
 const ExcelAlumnos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const resultado = yield Admin_model_1.Admin.Usuarios_admitidos();
+        const resultado = yield Admin_model_1.Admin.Usuarios_admitidos_listado();
         // Crear un nuevo libro de Excel
         const workbook = new exceljs_1.default.Workbook();
         const worksheet = workbook.addWorksheet("Usuarios Admitidos");
@@ -298,3 +298,37 @@ const CarnetAlumnos = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.CarnetAlumnos = CarnetAlumnos;
+const EnvioCorreos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const resultado = yield Admin_model_1.Admin.Usuarios_admitidos_listado();
+        if (!resultado || resultado.length === 0) {
+            res.status(404).json({ message: 'No se encontraron usuarios para el estado proporcionado' });
+            return;
+        }
+        const emailsSent = [];
+        const emailsFailed = [];
+        yield Promise.all(resultado.map((user) => __awaiter(void 0, void 0, void 0, function* () {
+            try {
+                if (!user.correo) {
+                    throw new Error('Correo no definido');
+                }
+                yield (0, emailservice_1.RecordatorioEmail)(user.correo);
+                emailsSent.push(user.correo);
+            }
+            catch (error) {
+                console.error(`Error enviando correo a ${user.correo}:`, error);
+                emailsFailed.push(user.correo);
+            }
+        })));
+        res.status(200).json({
+            message: 'Correos enviados con éxito',
+            emailsSent,
+            emailsFailed,
+        });
+    }
+    catch (error) {
+        console.error('Error enviando correos:', error);
+        res.status(500).json({ message: 'Hubo un error al enviar los correos' });
+    }
+});
+exports.EnvioCorreos = EnvioCorreos;

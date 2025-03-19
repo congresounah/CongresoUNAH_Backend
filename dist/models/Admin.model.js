@@ -120,5 +120,15 @@ class Admin {
             return data;
         });
     }
+    static Usuarios_admitidos_listado() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { data, error } = yield connection_1.default.rpc('p_usuarios_admitidos_listado');
+            if (error) {
+                console.error("Error al taer los usuarios admitidos", error);
+                throw new Error('Error al obtener usuarios admitidos');
+            }
+            return data;
+        });
+    }
 }
 exports.Admin = Admin;
