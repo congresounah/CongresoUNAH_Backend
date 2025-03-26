@@ -91,7 +91,7 @@ export class Admin{
     }
 
     static async UsuariosCertificados() {
-        const { data, error } = await supabase.rpc('p_participantes_certificados')
+        const { data, error } = await supabase.rpc('p_cantidad_asistencias')
         if (error) {
           console.error('Error al obtener particiapntes que cumplieron para el certificado:', error);
           throw new Error('Error al obtener particiapntes que cumplieron para el certificado');
